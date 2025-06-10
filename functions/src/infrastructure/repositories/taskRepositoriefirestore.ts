@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase-admin/firestore";
 import { Task } from "../../domain/entities/task";
 import { TaskRepository } from "../../domain/interfaces/task";
 import FirestoreClient from "../database/firestoreClient";
@@ -13,8 +14,11 @@ export class TaskRepositorieFirestore implements TaskRepository {
     }
 
 
-    async createTask(task: Task): Promise<boolean> {
-      const docRef = await this.db.collection('task').add(task);
+    async createTask(task: Omit<Task,'id'>): Promise<boolean> {
+      const docRef = await this.db.collection('task').add({
+        ...task,
+        date_creation: Timestamp.now(),
+      });
         if (!docRef.id) return false;
 		return true;
     }
@@ -22,7 +26,7 @@ export class TaskRepositorieFirestore implements TaskRepository {
 
     async updateTask(id: string, task: Partial<Task>): Promise<boolean> {
         try{
-        await this.db.doc(id).update(task);
+        await this.db.collection('task').doc(id).update(task);
         return true;
         } catch(error) {
             return false;
@@ -32,7 +36,7 @@ export class TaskRepositorieFirestore implements TaskRepository {
 
     async deleteTask(id: string): Promise<boolean> {
       try{
-        await this.db.doc(id).delete();
+        await this.db.collection('task').doc(id).delete();
         return true;
 
       }catch(error) {
@@ -41,10 +45,10 @@ export class TaskRepositorieFirestore implements TaskRepository {
     }
 
 
-    async getAllTasks(): Promise<Task[]> {
-    const docRef = await this.db.collection('task').get();
+    async getAllTasks(iduser:string): Promise<Task[]> {
+    const docRef = await this.db.collection('task').where('user_creation', '==', iduser).get();
     if (docRef.empty) return [];
-	return docRef.docs.map((task) => ({ id: task.id, ...task.data() } as Task));
+	    return docRef.docs.map((task) => ({...task.data(), id: task.id,date_creation: task.data().date_creation.toDate()  } as Task));
     }
 
 }

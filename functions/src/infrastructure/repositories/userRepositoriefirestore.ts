@@ -8,8 +8,9 @@ export class UserRepositoryFirestore implements UserRepository {
     
    async findById(email: string): Promise<User | null> {
          const doc = await this.db.collection('user').where('email', '==', email).limit(1).get();
-          if (!doc.empty) return null;
+        if (doc.empty) return null;
         const data = doc.docs[0];
+        
         return new User(data.id, data.data().email);
     }
 

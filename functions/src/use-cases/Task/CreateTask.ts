@@ -4,7 +4,7 @@ import { TaskRepository } from "../../domain/interfaces/task";
 export class CreateTask {
     constructor(private taskRepository: TaskRepository) {}
 
-    async create(task: Partial<Task>) {
+    async create(task: Omit<Task,'id'>) {
         if (!task.title) {
             throw new Error("Title is required");
         }

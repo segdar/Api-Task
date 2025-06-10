@@ -26,7 +26,10 @@ export class TaskRepositorieFirestore implements TaskRepository {
 
     async updateTask(id: string, task: Partial<Task>): Promise<boolean> {
         try{
-        await this.db.collection('task').doc(id).update(task);
+        await this.db.collection('task').doc(id).update({
+           ...task,
+        date_creation: Timestamp.now(),
+        });
         return true;
         } catch(error) {
             return false;
